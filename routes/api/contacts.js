@@ -1,60 +1,93 @@
 const express = require("express");
+const { NotFound, BadRequest } = require("http-errors");
 const router = express.Router();
-const ctrl = require("../../model");
-const { addContactSchema, updateContactSchema } = require("./schema");
+const Joi = require("joi");
+
+const joiSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+  phone: Joi.string().required(),
+});
+const contactsOperation = require("../../model/index");
 
 router.get("/", async (req, res, next) => {
   try {
-    const contacts = await ctrl.listContacts();
-    res.json({
-      status: "success",
-      code: 200,
-      data: { result: contacts },
-    });
+    const allContacts = await contactsOperation.getContacts();
+    
+    res.json(allContacts);
   } catch (error) {
     next(error);
   }
 });
 
 router.get("/:contactId", async (req, res, next) => {
-  const { contactId } = req.params;
-  const normalizedId = Number(contactId);
   try {
-    const selectedContact = await ctrl.getContactById(normalizedId);
-    if (!selectedContact) {
-      res.status(404).json({
-        status: "error",
-        code: 404,
-        message: "Not found",
-      });
-      return;
+    const { contactId } = req.params;
+    const contactById = await contactsOperation.getContactById(contactId);
+
+    if (!contactById) {
+      throw new NotFound(`Contact with id = ${contactId} not found`);
+      // const error = new Error(`Contact with id = ${contactId} not found`);
+      // error.status = 404;
+      // throw error;
+
+      // res.status(404).json({
+      //   status: "error",
+      //   code: 404,
+      //   message: `Contact with id = ${contactId} not found`,
+      // });
+      // return;
     }
-    res.json({
-      status: "success",
-      code: 200,
-      data: { result: selectedContact },
-    });
+
+    res.json(contactById);
   } catch (error) {
     next(error);
   }
 });
 
 router.post("/", async (req, res, next) => {
-  const { error } = addContactSchema.validate(req.body);
-  if (error) {
-    res.status(400).json({
-      status: "error",
-      code: 400,
-      message: error.message,
-    });
-    return;
-  }
   try {
-    const newContact = await ctrl.addContact(req.body);
+    const { error } = joiSchema.validate(req.body);
+
+    if (error) {
+      throw new BadRequest(error.message);
+    }
+
+    const newContact = await contactsOperation.addContact(req.body);
+
     res.status(201).json({
       status: "success",
       code: 201,
-      data: { result: newContact },
+      data: {
+        newContact,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put("/:contactId", async (req, res, next) => {
+  try {
+    const { body } = req;
+    const { contactId } = req.params;
+    const { error } = joiSchema.validate(body);
+
+    if (error) {
+      throw new BadRequest(error.message);
+    }
+    const updatedContact = await contactsOperation.updateContact(
+      contactId,
+      body
+    );
+    if (!updatedContact) {
+      throw new NotFound(`Contact with id = ${contactId} not found`);
+    }
+
+    res.json({
+      status: "success",
+      code: 200,
+      data: { updatedContact },
     });
   } catch (error) {
     next(error);
@@ -62,62 +95,18 @@ router.post("/", async (req, res, next) => {
 });
 
 router.delete("/:contactId", async (req, res, next) => {
-  const { contactId } = req.params;
   try {
-    const isFindedContact = await ctrl.removeContact(contactId);
-    if (!isFindedContact) {
-      res.status(404).json({
-        status: "error",
-        code: 404,
-        message: "Not found",
-      });
-      return;
+    const { contactId } = req.params;
+
+    const removeContact = await contactsOperation.removeContact(contactId);
+    if (!removeContact) {
+      throw new NotFound(`Contact with id = ${contactId} not found`);
     }
+    
     res.json({
       status: "success",
       code: 200,
       message: "Contact deleted",
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.patch("/:contactId", async (req, res, next) => {
-  const { contactId } = req.params;
-  const keysOfBody = Object.keys(req.body).length;
-  if (!keysOfBody) {
-    res
-      .status(400)
-      .json({ status: "error", code: 400, message: "Missing fields" });
-    return;
-  }
-  const { error } = updateContactSchema.validate(req.body);
-  if (error) {
-    res.status(400).json({
-      status: "error",
-      code: 400,
-      message: error.message,
-    });
-    return;
-  }
-  try {
-    const { isFindedContact, updatedContact } = await ctrl.updateContact(
-      contactId,
-      req.body
-    );
-    if (!isFindedContact) {
-      res.status(404).json({
-        status: "error",
-        code: 404,
-        message: "Not found",
-      });
-      return;
-    }
-    res.json({
-      status: "success",
-      code: 200,
-      data: { result: updatedContact },
     });
   } catch (error) {
     next(error);
