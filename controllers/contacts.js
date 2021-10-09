@@ -6,7 +6,7 @@ const { Contact } = require("../models");
 
 const getAll = async (req, res, next) => {
   try {
-    const allContacts = await Contact.find({});
+    const allContacts = await Contact.find({}, "_id name email phone favorite");
 
     res.json({
       status: "success",
@@ -23,7 +23,10 @@ const getAll = async (req, res, next) => {
 const getById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contactById = await Contact.findById(contactId);
+    const contactById = await Contact.findById(
+      contactId,
+      "_id name email phone favorite"
+    );
     // const contactById = await Contact.findOne({ _id: contactId });
 
     if (!contactById) {
