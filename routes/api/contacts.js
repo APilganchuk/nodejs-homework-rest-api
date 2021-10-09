@@ -6,6 +6,7 @@ router.get("/", ctrl.getAll);
 router.get("/:contactId", ctrl.getById);
 router.post("/", ctrl.add);
 router.put("/:contactId", ctrl.updateById);
+router.patch("/:contactId", ctrl.updateStatusContact);
 router.delete("/:contactId", ctrl.removeById);
 
 module.exports = router;
