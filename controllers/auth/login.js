@@ -15,6 +15,10 @@ const login = async (req, res, next) => {
     }
     const { email, password } = req.body;
     const user = await User.findOne({ email });
+    if (!user) {
+      throw new Unauthorized("Email or password is wrong");
+    }
+
     const { subscription } = user;
 
     if (!user) {
@@ -30,6 +34,8 @@ const login = async (req, res, next) => {
     };
 
     const token = jwt.sign(payload, SECRET_KEY);
+
+    await User.findByIdAndUpdate(user._id, { token });
 
     res.json({
       status: "success",

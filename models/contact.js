@@ -21,8 +21,8 @@ const contactSchema = Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
-  }
-  //   { versionKey: false, timestamps: true }
+  },
+  { versionKey: false }
 );
 
 const joiSchema = Joi.object({

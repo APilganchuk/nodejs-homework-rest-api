@@ -6,13 +6,36 @@ const { Contact } = require("../models");
 
 const getAll = async (req, res, next) => {
   try {
-    const allContacts = await Contact.find({}, "_id name email phone favorite");
+    const { page = 1, limit = 20 } = req.query;
+    const { favorite } = req.query;
 
+    const skip = (page - 1) * limit;
+
+    if (favorite) {
+      const favoriteContacts = await Contact.find(
+        { favorite },
+        "_id name email phone favorite",
+        { skip: skip, limit: +limit }
+      );
+      res.json({
+        status: "success",
+        code: 200,
+        data: {
+          contacts: favoriteContacts,
+        },
+      });
+      return;
+    }
+    const allContacts = await Contact.find(
+      {},
+      "_id name email phone favorite",
+      { skip: skip, limit: +limit }
+    );
     res.json({
       status: "success",
       code: 200,
       data: {
-        allContacts,
+        contacts: allContacts,
       },
     });
   } catch (error) {
