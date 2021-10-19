@@ -28,7 +28,7 @@ const updateSubscription = async (req, res, next) => {
 
     res.json({
       status: "success",
-      user: { email, subscr },
+      user: { email, subscription: subscr },
     });
   } catch (error) {
     next(error);
