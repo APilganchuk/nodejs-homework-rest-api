@@ -29,7 +29,6 @@ const joiSchema = Joi.object({
   password: Joi.string().required(),
   email: Joi.string().email().required(),
   subscription: Joi.string(),
-  token: Joi.string(),
 });
 
 const User = model("user", userSchema);
