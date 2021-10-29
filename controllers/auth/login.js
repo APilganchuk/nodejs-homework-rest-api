@@ -22,7 +22,11 @@ const login = async (req, res, next) => {
       throw new Unauthorized("Email  is wrong");
     }
 
-    const { subscription } = user;
+    const { subscription, verify } = user;
+
+    if (!verify) {
+      throw new Unauthorized("Email not verify");
+    }
 
     const isCorrectPassword = bcrypt.compareSync(password, user.password);
     if (!isCorrectPassword) {
