@@ -34,7 +34,7 @@ const register = async (req, res, next) => {
       verifyToken,
     });
 
-    const verifyMessage = {
+    const verificationMessage = {
       to: email,
       from: "opilganchuk@gmail.com",
       subject: "Verification email ",
@@ -44,7 +44,7 @@ const register = async (req, res, next) => {
             </a>`,
     };
 
-    sendEmail(verifyMessage);
+    sendEmail(verificationMessage);
 
     const { subscription: subscr, _id } = result;
 
