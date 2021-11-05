@@ -9,4 +9,7 @@ router.patch("/current", authenticate, ctrl.updateSubscription);
 
 router.patch("/avatars", authenticate, upload.single('avatar'), ctrl.updateAvatar);
 
+router.get("/verify/:verifyToken", ctrl.verify);
+router.post("/verify", ctrl.resendEmail);
+
 module.exports = router;
